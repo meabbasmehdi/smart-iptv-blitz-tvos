@@ -32,4 +32,8 @@ final class PlaylistsViewModel: ObservableObject {
             isLoading = false
         }
     }
+
+    func selectPlaylist(_ playlist: PlaylistResponse) {
+        playlistService.selectActivePlaylist(playlist)
+    }
 }

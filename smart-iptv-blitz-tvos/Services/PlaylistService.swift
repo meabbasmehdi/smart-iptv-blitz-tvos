@@ -1,5 +1,12 @@
 import Foundation
 
+enum PlaylistStartupSyncResult {
+    case activePlaylist
+    case noPlaylists
+    case needsSelection
+    case failed
+}
+
 final class PlaylistService {
     private let apiClient: APIClient
     private let authDeviceService: AuthDeviceService
@@ -32,27 +39,37 @@ final class PlaylistService {
         return response.data ?? []
     }
 
-    func syncActivePlaylistOnStartup() async -> Bool {
+    func syncActivePlaylistOnStartup() async -> PlaylistStartupSyncResult {
         guard let playlists = try? await fetchPlaylists() else {
             clearActivePlaylist()
-            return false
+            return .failed
         }
 
         guard !playlists.isEmpty else {
             clearActivePlaylist()
-            return false
+            return .noPlaylists
         }
 
         guard let storedID = preferences.int64(forKey: PreferenceKeys.activePlaylistID),
               let selected = playlists.first(where: { $0.id == storedID }) else {
             clearActivePlaylist()
-            return false
+            return .needsSelection
         }
 
         preferences.set(selected.id, forKey: PreferenceKeys.activePlaylistID)
         preferences.set(selected.source.rawValue, forKey: PreferenceKeys.activePlaylistSource)
         preferences.set(selected.title, forKey: PreferenceKeys.activePlaylistTitle)
-        return true
+        return .activePlaylist
+    }
+
+    func selectActivePlaylist(_ playlist: PlaylistResponse) {
+        guard let playlistID = playlist.id else {
+            return
+        }
+
+        preferences.set(playlistID, forKey: PreferenceKeys.activePlaylistID)
+        preferences.set(playlist.source.rawValue, forKey: PreferenceKeys.activePlaylistSource)
+        preferences.set(playlist.title, forKey: PreferenceKeys.activePlaylistTitle)
     }
 
     private func clearActivePlaylist() {
