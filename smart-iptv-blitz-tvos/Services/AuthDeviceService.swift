@@ -30,25 +30,31 @@ final class AuthDeviceService {
         }
     }
 
-    func resolveStartupDestination() async -> StartupDecision {
+    func resolveStartupDestination(registerBeforeCheck: Bool = true) async -> StartupDecision {
         let deviceID = deviceIdentityProvider.deviceID()
 
         do {
             let token = try await ensureValidToken()
             let bearer = "Bearer \(token)"
 
-            _ = await registerDevice(bearer: bearer, deviceID: deviceID)
+            if registerBeforeCheck {
+                _ = await registerDevice(bearer: bearer, deviceID: deviceID)
+            }
 
             do {
                 let status = try await checkDevice(bearer: bearer, deviceID: deviceID)
-                return decide(from: status)
+                return await decide(from: status, bearer: bearer, deviceID: deviceID)
             } catch {
                 let tokenStillValid = await validateToken(bearer: bearer)
                 if !tokenStillValid,
                    let refreshedToken = try? await requestNewToken() {
                     let refreshedBearer = "Bearer \(refreshedToken)"
                     if let retryStatus = try? await checkDevice(bearer: refreshedBearer, deviceID: deviceID) {
-                        return decide(from: retryStatus)
+                        return await decide(
+                            from: retryStatus,
+                            bearer: refreshedBearer,
+                            deviceID: deviceID
+                        )
                     }
                     let registered = await registerDevice(bearer: refreshedBearer, deviceID: deviceID)
                     return registered
@@ -88,6 +94,8 @@ final class AuthDeviceService {
         guard let token = response.token, !token.isEmpty else {
             throw APIFlowError.missingToken
         }
+
+        APIDebugLogger.log("auth token received token=\(token)")
 
         let expiryMillis = response.expiresAt.flatMap(Double.init).map { $0 * 1000 }
         tokenStore.store(token: token, expiryTimestampMillis: expiryMillis)
@@ -140,7 +148,11 @@ final class AuthDeviceService {
         )
     }
 
-    private func decide(from statusResponse: DeviceStatusResponse?) -> StartupDecision {
+    private func decide(
+        from statusResponse: DeviceStatusResponse?,
+        bearer: String,
+        deviceID: String
+    ) async -> StartupDecision {
         let onboardingCompletedLocally = preferences.bool(
             forKey: PreferenceKeys.playlistOnboardingComplete,
             default: false
@@ -151,6 +163,15 @@ final class AuthDeviceService {
 
         if isActive {
             return onboardingDone ? .success(.home) : .success(.onboarding)
+        }
+
+        if statusResponse?.success == true && statusResponse?.exists == true {
+            return .success(.onboarding)
+        }
+
+        let registered = await registerDevice(bearer: bearer, deviceID: deviceID)
+        if registered {
+            return .success(.onboarding)
         }
 
         return .failure(

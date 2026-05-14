@@ -18,18 +18,20 @@ final class AppStartupService {
     func resolveInitialRoute() async -> (route: AppRoute, message: String?) {
         _ = await authDeviceService.registerDeviceOnLaunch()
 
-        async let shouldShowDisclaimer = disclaimerService.shouldShowDisclaimer()
-        async let hasSyncedPlaylist = playlistService.syncActivePlaylistOnStartup()
-
-        if await shouldShowDisclaimer {
+        if await disclaimerService.shouldShowDisclaimer() {
             return (.disclaimer, nil)
         }
 
-        if await hasSyncedPlaylist {
+        switch await playlistService.syncActivePlaylistOnStartup() {
+        case .activePlaylist:
             return (.home, nil)
+        case .noPlaylists:
+            return (.createPlaylist, nil)
+        case .needsSelection, .failed:
+            break
         }
 
-        let decision = await authDeviceService.resolveStartupDestination()
+        let decision = await authDeviceService.resolveStartupDestination(registerBeforeCheck: false)
         switch decision {
         case let .success(target, message):
             return (map(target: target), message)
