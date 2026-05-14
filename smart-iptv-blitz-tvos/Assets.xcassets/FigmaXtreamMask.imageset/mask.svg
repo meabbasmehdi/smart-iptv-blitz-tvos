@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 270.29 212.988" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Mask group">
+<mask id="mask0_0_8" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="271" height="213">
+<path id="Rectangle 3283" d="M270.29 198.933C270.29 206.696 263.997 212.988 256.235 212.988L12.9739 212.988C5.80861 212.988 -4.78904e-07 207.18 0 200.014L1.33684e-05 -3.89796e-07L270.29 3.05176e-05L270.29 198.933Z" fill="var(--fill-0, #D9D9D9)"/>
+</mask>
+<g mask="url(#mask0_0_8)">
+<g id="Ellipse 568" filter="url(#filter0_f_0_8)">
+<ellipse cx="134.731" cy="237.855" rx="114.067" ry="102.71" transform="rotate(-180 134.731 237.855)" fill="var(--fill-0, #D15E60)"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_0_8" x="-78.9243" y="35.5565" width="427.311" height="404.597" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="49.7942" result="effect1_foregroundBlur_0_8"/>
+</filter>
+</defs>
+</svg>

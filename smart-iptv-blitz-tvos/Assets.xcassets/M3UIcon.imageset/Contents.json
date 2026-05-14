@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "ic_m3u.png",
+      "idiom" : "tv"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
