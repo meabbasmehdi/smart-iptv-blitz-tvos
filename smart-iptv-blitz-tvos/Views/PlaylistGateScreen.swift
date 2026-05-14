@@ -15,7 +15,11 @@ struct PlaylistGateScreen: View {
                 } else if !viewModel.playlists.isEmpty {
                     PlaylistSelectionView(
                         playlists: viewModel.playlists,
-                        onOpenHome: onOpenHome
+                        onSelectPlaylist: { playlist in
+                            viewModel.selectPlaylist(playlist)
+                            onOpenHome()
+                        },
+                        onAddPlaylist: onNeedsPlaylistCreation
                     )
                 } else if let errorMessage = viewModel.errorMessage {
                     VStack(spacing: 18) {
@@ -51,7 +55,8 @@ struct PlaylistGateScreen: View {
 
 private struct PlaylistSelectionView: View {
     let playlists: [PlaylistResponse]
-    let onOpenHome: () -> Void
+    let onSelectPlaylist: (PlaylistResponse) -> Void
+    let onAddPlaylist: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 32) {
@@ -66,10 +71,12 @@ private struct PlaylistSelectionView: View {
             ScrollView(.horizontal) {
                 HStack(spacing: 20) {
                     ForEach(playlists) { playlist in
-                        PlaylistCard(playlist: playlist, action: onOpenHome)
+                        PlaylistCard(playlist: playlist) {
+                            onSelectPlaylist(playlist)
+                        }
                     }
 
-                    AddPlaylistCard(action: {})
+                    AddPlaylistCard(action: onAddPlaylist)
                 }
                 .padding(.horizontal, 40)
             }

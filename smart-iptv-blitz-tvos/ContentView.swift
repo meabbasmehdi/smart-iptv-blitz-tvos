@@ -57,6 +57,9 @@ struct ContentView: View {
                     .transition(.opacity)
             case .some(.home):
                 HomeScreen(viewModel: homeViewModel)
+                    .onAppear {
+                        homeViewModel.refreshActivePlaylist()
+                    }
                     .transition(.opacity)
             }
         }
