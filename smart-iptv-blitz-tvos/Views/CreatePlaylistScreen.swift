@@ -122,11 +122,14 @@ private struct XtreamPlaylistCard: View {
             Image("FigmaXtreamCardIcon")
                 .resizable()
                 .scaledToFill()
-                .frame(width: scaled(isFocused ? 101.683 : 72), height: scaled(isFocused ? 101.683 : 72))
+                .frame(
+                    width: scaled(isFocused ? 101.683 : 101.629),
+                    height: scaled(isFocused ? 101.683 : 101.629)
+                )
                 .clipped()
                 .offset(
-                    x: scaled(isFocused ? 83 : 89),
-                    y: scaled(isFocused ? 52.14 : 40)
+                    x: scaled(isFocused ? 83 : 74.185),
+                    y: scaled(isFocused ? 52.14 : 46)
                 )
 
             Text("Xtream")
