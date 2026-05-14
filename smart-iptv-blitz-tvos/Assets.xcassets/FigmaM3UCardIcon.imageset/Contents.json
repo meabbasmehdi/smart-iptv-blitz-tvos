@@ -1,9 +1,19 @@
 {
   "images" : [
     {
-      "filename" : "m3u.png",
+      "filename" : "ChatGPT Image Oct 15, 2025, 10_36_19 AM 1.png",
       "idiom" : "universal",
       "scale" : "1x"
+    },
+    {
+      "filename" : "ChatGPT Image Oct 15, 2025, 10_36_19 AM 1@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "ChatGPT Image Oct 15, 2025, 10_36_19 AM 1@3x.png",
+      "idiom" : "universal",
+      "scale" : "3x"
     }
   ],
   "info" : {
