@@ -45,75 +45,34 @@ private struct DisclaimerDialog: View {
     let onAccepted: () -> Void
 
     @FocusState private var focusedElement: DisclaimerFocusElement?
-    @State private var scrollTarget = 0
+    @State private var scrollCommand = DisclaimerScrollCommand()
+    @State private var scrollState = DisclaimerScrollState()
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Text(viewModel.title.isEmpty ? "Disclaimer" : viewModel.title)
+            Text(displayTitle)
                 .font(.app(size: scaled(22), weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: scaled(781), alignment: .center)
                 .position(x: scaled(435), y: scaled(90))
 
-            ScrollViewReader { scrollProxy in
-                ScrollView(.vertical, showsIndicators: false) {
-                    LazyVStack(alignment: .leading, spacing: scaled(18)) {
-                        if viewModel.isLoading && viewModel.displayDescription.isEmpty {
-                            Text("Loading latest disclaimer...")
-                                .font(.app(size: scaled(16), weight: .regular))
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .id(0)
-                        } else {
-                            ForEach(Array(displayParagraphs.enumerated()), id: \.offset) { index, paragraph in
-                                Text(attributedBody(for: paragraph))
-                                    .lineSpacing(scaled(1))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .id(index)
-                            }
-                        }
-
-                        if let errorMessage = viewModel.errorMessage, !errorMessage.isEmpty {
-                            Text(errorMessage)
-                                .font(.app(size: scaled(16), weight: .regular))
-                                .foregroundStyle(AppColors.error)
-                                .padding(.top, scaled(14))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                    .padding(.trailing, scaled(26))
-                    .padding(.vertical, scaled(2))
-                }
-                .onChange(of: scrollTarget) { _, newValue in
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        scrollProxy.scrollTo(newValue, anchor: .top)
-                    }
-                }
-            }
+            DisclaimerScrollableTextView(
+                attributedText: scrollAttributedBody,
+                scale: scale,
+                scrollCommand: scrollCommand,
+                scrollState: $scrollState
+            )
             .frame(width: scaled(781), height: scaled(331))
             .clipped()
             .focusable(true)
             .focusEffectDisabled()
             .focused($focusedElement, equals: .content)
-            .overlay(
-                RoundedRectangle(cornerRadius: scaled(8), style: .continuous)
-                    .stroke(
-                        focusedElement == .content ? Color(hex: 0xD15E60).opacity(0.9) : .clear,
-                        lineWidth: scaled(2)
-                    )
-            )
             .position(x: scaled(434.5), y: scaled(288.5))
 
-            ZStack(alignment: .top) {
-                RoundedRectangle(cornerRadius: scaled(222), style: .continuous)
-                    .fill(Color.white.opacity(0.2))
-
-                RoundedRectangle(cornerRadius: scaled(222), style: .continuous)
-                    .fill(focusedElement == .content ? Color(hex: 0xD15E60).opacity(0.8) : Color.white.opacity(0.32))
-                    .frame(width: scaled(7), height: scaled(scrollThumbHeight))
-                    .offset(y: scaled(scrollThumbOffset))
-            }
+            RoundedRectangle(cornerRadius: scaled(222), style: .continuous)
+                .fill(Color.white.opacity(0.2))
                 .frame(width: scaled(7), height: scaled(211))
+                .offset(y: scaled(scrollIndicatorOffset))
                 .position(x: scaled(838.5), y: scaled(207.5))
 
             DisclaimerFigmaButton(
@@ -146,25 +105,24 @@ private struct DisclaimerDialog: View {
         .background(Color(hex: 0x232323).opacity(0.4))
         .clipShape(RoundedRectangle(cornerRadius: scaled(24), style: .continuous))
         .onAppear {
-            focusedElement = .deny
-        }
-        .onChange(of: displayParagraphs.count) { _, count in
-            if scrollTarget >= count {
-                scrollTarget = max(0, count - 1)
-            }
+            focusedElement = .content
         }
         .onMoveCommand { direction in
             moveFocus(direction)
         }
         #if os(tvOS)
-        .defaultFocus($focusedElement, .deny)
+        .defaultFocus($focusedElement, .content)
         #endif
     }
 
+    private var displayTitle: String {
+        let title = viewModel.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { return "Disclaimer" }
+        return title.localizedCaseInsensitiveContains("disclaimer") ? "Disclaimer" : title
+    }
+
     private var displayParagraphs: [String] {
-        let body = viewModel.displayDescription.isEmpty
-            ? Self.figmaDisclaimerBody
-            : viewModel.displayDescription
+        let body = sanitizedDisplayBody
         let paragraphs = body
             .components(separatedBy: "\n\n")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -172,32 +130,70 @@ private struct DisclaimerDialog: View {
         return paragraphs.isEmpty ? [body] : paragraphs
     }
 
-    private func attributedBody(for paragraph: String) -> AttributedString {
-        let regularFont = UIFont(
-            name: AppFontFamily.postScriptName(for: .regular),
-            size: scaled(16)
-        ) ?? .systemFont(ofSize: scaled(16), weight: .regular)
-        let boldFont = UIFont(
-            name: AppFontFamily.postScriptName(for: .bold),
-            size: scaled(20)
-        ) ?? .systemFont(ofSize: scaled(20), weight: .bold)
+    private var sanitizedDisplayBody: String {
+        let sourceBody = viewModel.displayDescription.isEmpty
+            ? Self.figmaDisclaimerBody
+            : viewModel.displayDescription
+        var lines = sourceBody.components(separatedBy: .newlines)
+        let duplicateHeaders = Set(["disclaimer", "app disclaimer", displayTitle.lowercased()])
+
+        while let firstLine = lines.first {
+            let normalizedLine = firstLine.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if normalizedLine.isEmpty {
+                lines.removeFirst()
+            } else if duplicateHeaders.contains(normalizedLine) {
+                lines.removeFirst()
+            } else {
+                break
+            }
+        }
+
+        return lines
+            .joined(separator: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var displayBody: String {
+        if viewModel.isLoading && viewModel.displayDescription.isEmpty {
+            return "Loading latest disclaimer..."
+        }
+
+        return displayParagraphs.joined(separator: "\n\n")
+    }
+
+    private var scrollAttributedBody: NSAttributedString {
+        let attributed = NSMutableAttributedString(attributedString: attributedBody(for: displayBody))
+
+        if let errorMessage = viewModel.errorMessage, !errorMessage.isEmpty {
+            if attributed.length > 0 {
+                attributed.append(NSAttributedString(string: "\n\n", attributes: bodyAttributes()))
+            }
+            attributed.append(
+                NSAttributedString(
+                    string: errorMessage,
+                    attributes: bodyAttributes(foregroundColor: UIColor(AppColors.error))
+                )
+            )
+        }
+
+        return attributed
+    }
+
+    private func attributedBody(for body: String) -> NSAttributedString {
         let attributed = NSMutableAttributedString(
-            string: paragraph,
-            attributes: [
-                .font: regularFont,
-                .foregroundColor: UIColor.white
-            ]
+            string: body,
+            attributes: bodyAttributes()
         )
 
         Self.boldPhrases.forEach { phrase in
-            let source = paragraph as NSString
+            let source = body as NSString
             var searchRange = NSRange(location: 0, length: source.length)
             while searchRange.location < source.length {
                 let foundRange = source.range(of: phrase, options: [], range: searchRange)
                 guard foundRange.location != NSNotFound else { break }
                 attributed.addAttributes(
                     [
-                        .font: boldFont,
+                        .font: uiFont(weight: .bold, size: scaled(20)),
                         .foregroundColor: UIColor.white
                     ],
                     range: foundRange
@@ -207,22 +203,34 @@ private struct DisclaimerDialog: View {
             }
         }
 
-        return AttributedString(attributed)
+        return attributed
+    }
+
+    private func bodyAttributes(foregroundColor: UIColor = .white) -> [NSAttributedString.Key: Any] {
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = scaled(1)
+
+        return [
+            .font: uiFont(weight: .regular, size: scaled(16)),
+            .foregroundColor: foregroundColor,
+            .paragraphStyle: paragraphStyle
+        ]
+    }
+
+    private func uiFont(weight: Font.Weight, size: CGFloat) -> UIFont {
+        UIFont(
+            name: AppFontFamily.postScriptName(for: weight),
+            size: size
+        ) ?? .systemFont(ofSize: size, weight: weight == .bold ? .bold : .regular)
     }
 
     private func scaled(_ value: CGFloat) -> CGFloat {
         value * scale
     }
 
-    private var scrollThumbHeight: CGFloat {
-        let count = max(displayParagraphs.count, 1)
-        return max(36, 211 / CGFloat(count))
-    }
-
-    private var scrollThumbOffset: CGFloat {
-        let available = max(0, 211 - scrollThumbHeight)
-        let maxIndex = max(displayParagraphs.count - 1, 1)
-        return available * CGFloat(scrollTarget) / CGFloat(maxIndex)
+    private var scrollIndicatorOffset: CGFloat {
+        guard scrollState.isScrollable else { return 0 }
+        return (331 - 211) * scrollState.progress
     }
 
     private func moveFocus(_ direction: MoveCommandDirection) {
@@ -237,14 +245,16 @@ private struct DisclaimerDialog: View {
             }
         case .up:
             if focusedElement == .content {
-                scrollTarget = max(0, scrollTarget - 1)
+                if scrollState.canScrollUp {
+                    queueScroll(.up)
+                }
             } else if focusedElement == .agree || focusedElement == .deny {
                 focusedElement = .content
             }
         case .down:
             if focusedElement == .content {
-                if scrollTarget < displayParagraphs.count - 1 {
-                    scrollTarget += 1
+                if scrollState.canScrollDown {
+                    queueScroll(.down)
                 } else {
                     focusedElement = .deny
                 }
@@ -252,6 +262,13 @@ private struct DisclaimerDialog: View {
         @unknown default:
             break
         }
+    }
+
+    private func queueScroll(_ direction: DisclaimerScrollDirection) {
+        scrollCommand = DisclaimerScrollCommand(
+            id: scrollCommand.id + 1,
+            direction: direction
+        )
     }
 
     private static let boldPhrases = [
@@ -292,6 +309,173 @@ private struct DisclaimerDialog: View {
 
     By installing or using this application, you acknowledge and agree that you are using it at your own risk, and that the developers and distributors are not responsible for any misuse, unlawful activity, or violation arising from its use.
     """
+}
+
+private struct DisclaimerScrollableTextView: UIViewRepresentable {
+    let attributedText: NSAttributedString
+    let scale: CGFloat
+    let scrollCommand: DisclaimerScrollCommand
+    @Binding var scrollState: DisclaimerScrollState
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(scrollState: $scrollState)
+    }
+
+    func makeUIView(context: Context) -> UIScrollView {
+        let scrollView = UIScrollView()
+        scrollView.backgroundColor = .clear
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.alwaysBounceVertical = false
+        scrollView.bounces = true
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.panGestureRecognizer.allowedTouchTypes = [
+            NSNumber(value: UITouch.TouchType.indirect.rawValue)
+        ]
+        scrollView.delegate = context.coordinator
+
+        let label = UILabel()
+        label.backgroundColor = .clear
+        label.numberOfLines = 0
+        label.attributedText = attributedText
+        label.translatesAutoresizingMaskIntoConstraints = false
+
+        scrollView.addSubview(label)
+
+        let topConstraint = label.topAnchor.constraint(
+            equalTo: scrollView.contentLayoutGuide.topAnchor,
+            constant: 0
+        )
+        let bottomConstraint = label.bottomAnchor.constraint(
+            equalTo: scrollView.contentLayoutGuide.bottomAnchor,
+            constant: 0
+        )
+        let widthConstraint = label.widthAnchor.constraint(
+            equalTo: scrollView.frameLayoutGuide.widthAnchor,
+            constant: 0
+        )
+
+        NSLayoutConstraint.activate([
+            topConstraint,
+            label.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            bottomConstraint,
+            widthConstraint
+        ])
+
+        context.coordinator.label = label
+        context.coordinator.topConstraint = topConstraint
+        context.coordinator.bottomConstraint = bottomConstraint
+        context.coordinator.widthConstraint = widthConstraint
+
+        return scrollView
+    }
+
+    func updateUIView(_ scrollView: UIScrollView, context: Context) {
+        context.coordinator.scrollState = $scrollState
+
+        if let label = context.coordinator.label {
+            let hasCurrentText = label.attributedText?.isEqual(to: attributedText) == true
+            if !hasCurrentText {
+                label.attributedText = attributedText
+                scrollView.setContentOffset(.zero, animated: false)
+            }
+        }
+
+        context.coordinator.topConstraint?.constant = 0
+        context.coordinator.bottomConstraint?.constant = 0
+        context.coordinator.widthConstraint?.constant = 0
+
+        scrollView.setNeedsLayout()
+        scrollView.layoutIfNeeded()
+
+        if scrollCommand.id != context.coordinator.lastHandledCommandID {
+            context.coordinator.lastHandledCommandID = scrollCommand.id
+            context.coordinator.scroll(scrollCommand.direction, in: scrollView, scale: scale)
+        }
+
+        context.coordinator.publishScrollState(for: scrollView)
+    }
+
+    final class Coordinator: NSObject, UIScrollViewDelegate {
+        var scrollState: Binding<DisclaimerScrollState>
+        weak var label: UILabel?
+        weak var topConstraint: NSLayoutConstraint?
+        weak var bottomConstraint: NSLayoutConstraint?
+        weak var widthConstraint: NSLayoutConstraint?
+        var lastHandledCommandID = 0
+
+        init(scrollState: Binding<DisclaimerScrollState>) {
+            self.scrollState = scrollState
+        }
+
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+            publishScrollState(for: scrollView)
+        }
+
+        func scroll(_ direction: DisclaimerScrollDirection, in scrollView: UIScrollView, scale: CGFloat) {
+            let maxOffset = max(0, scrollView.contentSize.height - scrollView.bounds.height)
+            guard maxOffset > 0 else {
+                publishScrollState(for: scrollView)
+                return
+            }
+
+            let step = max(48 * scale, scrollView.bounds.height * 0.72)
+            let proposedOffset = scrollView.contentOffset.y + (direction == .down ? step : -step)
+            let clampedOffset = min(max(proposedOffset, 0), maxOffset)
+            scrollView.setContentOffset(CGPoint(x: 0, y: clampedOffset), animated: true)
+            publishScrollState(for: scrollView)
+        }
+
+        func publishScrollState(for scrollView: UIScrollView) {
+            let nextState = DisclaimerScrollState(
+                contentHeight: scrollView.contentSize.height,
+                viewportHeight: scrollView.bounds.height,
+                contentOffsetY: scrollView.contentOffset.y
+            )
+
+            guard nextState != scrollState.wrappedValue else { return }
+
+            DispatchQueue.main.async { [scrollState] in
+                scrollState.wrappedValue = nextState
+            }
+        }
+    }
+}
+
+private enum DisclaimerScrollDirection: Equatable {
+    case up
+    case down
+}
+
+private struct DisclaimerScrollCommand: Equatable {
+    var id = 0
+    var direction: DisclaimerScrollDirection = .down
+}
+
+private struct DisclaimerScrollState: Equatable {
+    var contentHeight: CGFloat = 0
+    var viewportHeight: CGFloat = 0
+    var contentOffsetY: CGFloat = 0
+
+    private var maxOffset: CGFloat {
+        max(0, contentHeight - viewportHeight)
+    }
+
+    var isScrollable: Bool {
+        maxOffset > 1
+    }
+
+    var canScrollUp: Bool {
+        contentOffsetY > 1
+    }
+
+    var canScrollDown: Bool {
+        contentOffsetY < maxOffset - 1
+    }
+
+    var progress: CGFloat {
+        guard maxOffset > 0 else { return 0 }
+        return min(1, max(0, contentOffsetY / maxOffset))
+    }
 }
 
 private enum DisclaimerFocusElement: Hashable {
