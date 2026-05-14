@@ -63,6 +63,7 @@ struct DeviceRegistrationResponse: Decodable {
 
 struct DeviceStatusResponse: Decodable {
     let success: Bool
+    let exists: Bool?
     let status: String?
     let message: String?
     let onboardingCompleted: Bool?
@@ -70,6 +71,7 @@ struct DeviceStatusResponse: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case success
+        case exists
         case status
         case message
         case onboardingCompleted = "onboarding_completed"
