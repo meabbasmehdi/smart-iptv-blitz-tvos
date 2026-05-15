@@ -72,6 +72,35 @@ final class PlaylistService {
         preferences.set(playlist.title, forKey: PreferenceKeys.activePlaylistTitle)
     }
 
+    func addDefaultPlaylistAndSelect() async throws -> PlaylistResponse {
+        let token = try await authDeviceService.ensureValidToken()
+        let response = try await apiClient.request(
+            DefaultPlaylistResponse.self,
+            path: "iptv/smart/playlist/default/detail/",
+            method: .get,
+            bearerToken: "Bearer \(token)",
+            queryItems: [
+                URLQueryItem(name: "device_id", value: deviceIdentityProvider.deviceID())
+            ]
+        )
+
+        guard response.success else {
+            throw APIFlowError.server(
+                statusCode: 200,
+                message: response.message ?? "Unable to load the default playlist."
+            )
+        }
+
+        let playlists = try await fetchPlaylists()
+        guard let selected = playlists.first(where: { $0.source == .default || $0.source == .demo })
+            ?? playlists.first else {
+            throw APIFlowError.invalidResponse
+        }
+
+        selectActivePlaylist(selected)
+        return selected
+    }
+
     private func clearActivePlaylist() {
         preferences.remove(PreferenceKeys.activePlaylistID)
         preferences.remove(PreferenceKeys.activePlaylistSource)

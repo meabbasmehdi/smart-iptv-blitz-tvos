@@ -13,6 +13,7 @@ struct ContentView: View {
     @StateObject private var startupViewModel: AppStartupViewModel
     @StateObject private var disclaimerViewModel: DisclaimerViewModel
     @StateObject private var playlistsViewModel: PlaylistsViewModel
+    @StateObject private var createPlaylistViewModel: CreatePlaylistViewModel
     @StateObject private var homeViewModel: HomeViewModel
 
     init(container: AppContainer = .live) {
@@ -28,6 +29,9 @@ struct ContentView: View {
         )
         _playlistsViewModel = StateObject(
             wrappedValue: PlaylistsViewModel(playlistService: container.playlistService)
+        )
+        _createPlaylistViewModel = StateObject(
+            wrappedValue: CreatePlaylistViewModel(playlistService: container.playlistService)
         )
         _homeViewModel = StateObject(
             wrappedValue: HomeViewModel(preferences: container.preferences)
@@ -53,7 +57,10 @@ struct ContentView: View {
                 )
                 .transition(.opacity)
             case .some(.createPlaylist):
-                CreatePlaylistScreen()
+                CreatePlaylistScreen(
+                    viewModel: createPlaylistViewModel,
+                    onDemoPlaylistAdded: startupViewModel.routeToHome
+                )
                     .transition(.opacity)
             case .some(.home):
                 HomeScreen(viewModel: homeViewModel)

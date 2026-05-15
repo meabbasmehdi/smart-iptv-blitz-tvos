@@ -184,6 +184,28 @@ struct PlaylistListResponse: Decodable {
     let message: String?
 }
 
+struct DefaultPlaylistResponse: Decodable {
+    let success: Bool
+    let message: String?
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case message
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let boolValue = try? container.decode(Bool.self, forKey: .success) {
+            success = boolValue
+        } else if let stringValue = try? container.decode(String.self, forKey: .success) {
+            success = !["false", "0", "no"].contains(stringValue.lowercased())
+        } else {
+            success = true
+        }
+        message = try? container.decode(String.self, forKey: .message)
+    }
+}
+
 private extension KeyedDecodingContainer {
     func decodeStringOrNumber(forKey key: Key) -> String? {
         if let stringValue = try? decode(String.self, forKey: key) {
