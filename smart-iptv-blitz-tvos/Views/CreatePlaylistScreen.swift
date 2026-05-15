@@ -19,19 +19,9 @@ struct CreatePlaylistScreen: View {
                     .offset(x: scaled(60, scale), y: scaled(60, scale))
 
                 HStack(spacing: scaled(28, scale)) {
-                    Image(AppImages.wifiIcon)
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.white)
-                        .frame(width: scaled(24, scale), height: scaled(24, scale))
+                    CreatePlaylistHeaderIcon(systemName: "wifi", scale: scale)
 
-                    Image(AppImages.settingsIcon)
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.white)
-                        .frame(width: scaled(24, scale), height: scaled(24, scale))
+                    CreatePlaylistHeaderIcon(systemName: "gearshape", scale: scale)
                 }
                 .offset(x: scaled(732, scale), y: scaled(67, scale))
 
@@ -105,6 +95,22 @@ private enum PlaylistLandingFocus: Hashable {
     case xtream
     case playlistURL
     case demo
+}
+
+private struct CreatePlaylistHeaderIcon: View {
+    let systemName: String
+    let scale: CGFloat
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: scaled(20), weight: systemName == "wifi" ? .semibold : .regular))
+            .foregroundStyle(.white)
+            .frame(width: scaled(24), height: scaled(24))
+    }
+
+    private func scaled(_ value: CGFloat) -> CGFloat {
+        value * scale
+    }
 }
 
 private struct XtreamPlaylistCard: View {
