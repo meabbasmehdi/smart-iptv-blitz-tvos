@@ -124,8 +124,8 @@ private struct PlaylistCard: View {
     private func cardGradient(isFocused: Bool) -> LinearGradient {
         LinearGradient(
             colors: [
-                .white.opacity(0.2),
-                (isFocused ? AppColors.brandSecondary : Color(hex: 0x0B0609)).opacity(0.2)
+                AppColors.cardBackground,
+                (isFocused ? AppColors.brandSecondary : AppColors.shadowBlack).opacity(0.2)
             ],
             startPoint: .top,
             endPoint: .bottom
@@ -154,8 +154,8 @@ private struct AddPlaylistCard: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                .white.opacity(0.2),
-                                (isFocused ? AppColors.brandSecondary : Color(hex: 0x0B0609)).opacity(0.2)
+                                AppColors.cardBackground,
+                                (isFocused ? AppColors.brandSecondary : AppColors.shadowBlack).opacity(0.2)
                             ],
                             startPoint: .top,
                             endPoint: .bottom

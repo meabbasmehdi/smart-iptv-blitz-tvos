@@ -9,7 +9,7 @@ struct SplashView: View {
             Color.black.ignoresSafeArea()
 
             if !showStartButton {
-                Image("SplashBackground")
+                Image(AppImages.splashBackground)
                     .resizable()
                     .aspectRatio(16 / 9, contentMode: .fill)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)

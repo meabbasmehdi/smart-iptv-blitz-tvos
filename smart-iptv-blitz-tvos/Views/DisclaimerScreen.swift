@@ -13,7 +13,7 @@ struct DisclaimerScreen: View {
                     onStartClick: viewModel.onSplashStart
                 )
             } else {
-                FigmaDisclaimerBackground {
+                FigmaScreenBackground {
                     GeometryReader { proxy in
                         let scale = min(proxy.size.width / 1280, proxy.size.height / 720)
 
@@ -70,7 +70,7 @@ private struct DisclaimerDialog: View {
             .position(x: scaled(434.5), y: scaled(288.5))
 
             RoundedRectangle(cornerRadius: scaled(222), style: .continuous)
-                .fill(Color.white.opacity(0.2))
+                .fill(AppColors.cardBackground)
                 .frame(width: scaled(7), height: scaled(211))
                 .offset(y: scaled(scrollIndicatorOffset))
                 .position(x: scaled(838.5), y: scaled(207.5))
@@ -78,7 +78,7 @@ private struct DisclaimerDialog: View {
             DisclaimerFigmaButton(
                 title: "Agree",
                 fontWeight: .bold,
-                background: Color(hex: 0x8B2621),
+                background: AppColors.brandPrimary,
                 border: .clear,
                 scale: scale,
                 isFocused: focusedElement == .agree,
@@ -93,7 +93,7 @@ private struct DisclaimerDialog: View {
             DisclaimerFigmaButton(
                 title: "Deny",
                 fontWeight: .semibold,
-                background: Color(hex: 0x3E3E3E),
+                background: AppColors.declineButton,
                 border: .clear,
                 scale: scale,
                 isFocused: focusedElement == .deny,
@@ -102,7 +102,7 @@ private struct DisclaimerDialog: View {
             .focused($focusedElement, equals: .deny)
             .position(x: scaled(590.5), y: scaled(508))
         }
-        .background(Color(hex: 0x232323).opacity(0.4))
+        .background(AppColors.dialogSurface)
         .clipShape(RoundedRectangle(cornerRadius: scaled(24), style: .continuous))
         .onAppear {
             focusedElement = .content
@@ -502,7 +502,7 @@ private struct DisclaimerFigmaButton: View {
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(isFocused ? Color(hex: 0xD15E60) : border, lineWidth: isFocused ? 4 * scale : 0)
+                    .stroke(isFocused ? AppColors.brandSecondary : border, lineWidth: isFocused ? 4 * scale : 0)
             )
             .scaleEffect(isFocused ? 1.02 : 1)
             .contentShape(Capsule())
@@ -511,37 +511,5 @@ private struct DisclaimerFigmaButton: View {
             .onTapGesture(perform: action)
             .accessibilityAddTraits(.isButton)
             .animation(.easeOut(duration: 0.12), value: isFocused)
-    }
-}
-
-private struct FigmaDisclaimerBackground<Content: View>: View {
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                stops: [
-                    .init(color: Color(hex: 0x8B2621), location: 0.04792),
-                    .init(color: Color(hex: 0xD15E60), location: 0.63292)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-
-            LinearGradient(
-                stops: [
-                    .init(color: .black, location: 0),
-                    .init(color: .black, location: 0.38298),
-                    .init(color: .black.opacity(0.5), location: 0.72276),
-                    .init(color: .clear, location: 1)
-                ],
-                startPoint: .bottom,
-                endPoint: .top
-            )
-            .ignoresSafeArea()
-
-            content
-        }
     }
 }

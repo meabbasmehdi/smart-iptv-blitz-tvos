@@ -9,21 +9,27 @@ struct CreatePlaylistScreen: View {
             let scale = min(proxy.size.width / 1280, proxy.size.height / 720)
 
             ZStack(alignment: .topLeading) {
-                PlaylistFigmaBackground()
+                FigmaScreenBackground {
+                    EmptyView()
+                }
 
                 Text("Smart IPTV")
-                    .font(.app(size: scaled(24, scale), weight: .semibold))
+                    .font(AppTypography.titleSemibold(scale: scale))
                     .foregroundStyle(.white)
                     .offset(x: scaled(60, scale), y: scaled(60, scale))
 
                 HStack(spacing: scaled(28, scale)) {
-                    Image(systemName: "wifi")
-                        .font(.system(size: scaled(20, scale), weight: .semibold))
+                    Image(AppImages.wifiIcon)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
                         .foregroundStyle(.white)
                         .frame(width: scaled(24, scale), height: scaled(24, scale))
 
-                    Image(systemName: "gearshape")
-                        .font(.system(size: scaled(20, scale), weight: .regular))
+                    Image(AppImages.settingsIcon)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
                         .foregroundStyle(.white)
                         .frame(width: scaled(24, scale), height: scaled(24, scale))
                 }
@@ -109,17 +115,17 @@ private struct XtreamPlaylistCard: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: scaled(12.974), style: .continuous)
-                .fill(Color.white.opacity(0.2))
+                .fill(AppColors.cardBackground)
                 .frame(width: scaled(cardWidth), height: scaled(cardHeight))
 
-            Image("FigmaXtreamMask")
+            Image(AppImages.xtreamCardMask)
                 .resizable()
                 .scaledToFill()
                 .frame(width: scaled(cardWidth), height: scaled(isFocused ? 213.559 : 196))
                 .clipped()
                 .offset(x: 0, y: scaled(isFocused ? 160.44 : 149))
 
-            Image("FigmaXtreamCardIcon")
+            Image(AppImages.xtreamCardIcon)
                 .resizable()
                 .scaledToFill()
                 .frame(
@@ -154,7 +160,7 @@ private struct XtreamPlaylistCard: View {
                 )
 
             RoundedRectangle(cornerRadius: scaled(12.974), style: .continuous)
-                .stroke(isFocused ? Color(hex: 0xD15E60) : .clear, lineWidth: scaled(2.162))
+                .stroke(isFocused ? AppColors.brandSecondary : .clear, lineWidth: scaled(2.162))
                 .frame(width: scaled(cardWidth), height: scaled(cardHeight))
         }
         .frame(width: scaled(cardWidth), height: scaled(cardHeight), alignment: .topLeading)
@@ -187,10 +193,10 @@ private struct PlaylistURLCard: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: scaled(12), style: .continuous)
-                .fill(Color.white.opacity(0.2))
+                .fill(AppColors.cardBackground)
                 .frame(width: scaled(cardWidth), height: scaled(cardHeight))
 
-            Image("FigmaM3UCardIcon")
+            Image(AppImages.m3uCardIcon)
                 .resizable()
                 .scaledToFill()
                 .frame(
@@ -225,7 +231,7 @@ private struct PlaylistURLCard: View {
                 )
 
             RoundedRectangle(cornerRadius: scaled(12), style: .continuous)
-                .stroke(isFocused ? Color(hex: 0xD15E60) : .clear, lineWidth: scaled(2.162))
+                .stroke(isFocused ? AppColors.brandSecondary : .clear, lineWidth: scaled(2.162))
                 .frame(width: scaled(cardWidth), height: scaled(cardHeight))
         }
         .frame(width: scaled(cardWidth), height: scaled(cardHeight), alignment: .topLeading)
@@ -257,12 +263,12 @@ private struct DemoPlaylistFocusButton: View {
 
     var body: some View {
         Text("Watch a demo playlist")
-            .font(.app(size: scaled(18), weight: .regular))
-            .foregroundStyle(Color(hex: 0xD15E60))
+            .font(AppTypography.bodyRegular(scale: scale))
+            .foregroundStyle(AppColors.brandSecondary)
             .frame(width: scaled(250), height: scaled(47))
             .overlay(
                 RoundedRectangle(cornerRadius: scaled(10), style: .continuous)
-                    .stroke(isFocused ? Color(hex: 0xD15E60) : .clear, lineWidth: scaled(1))
+                    .stroke(isFocused ? AppColors.brandSecondary : .clear, lineWidth: scaled(1))
             )
             .contentShape(RoundedRectangle(cornerRadius: scaled(10), style: .continuous))
             .focusable(true)
@@ -317,32 +323,6 @@ private struct PlaylistClock: View {
 
     private static let weekdayText = ["SUN", "MON", "TUES", "WED", "THUR", "FRI", "SAT"]
     private static let monthText = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-}
-
-private struct PlaylistFigmaBackground: View {
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                stops: [
-                    .init(color: Color(hex: 0x8B2621), location: 0.04792),
-                    .init(color: Color(hex: 0xD15E60), location: 0.63292)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            LinearGradient(
-                stops: [
-                    .init(color: .black, location: 0),
-                    .init(color: .black, location: 0.38298),
-                    .init(color: .black.opacity(0.5), location: 0.72276),
-                    .init(color: .clear, location: 1)
-                ],
-                startPoint: .bottom,
-                endPoint: .top
-            )
-        }
-    }
 }
 
 #Preview("Create Playlist Screen") {
