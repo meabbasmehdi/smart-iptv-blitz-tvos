@@ -114,16 +114,13 @@ private struct XtreamPlaylistCard: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: scaled(12.974), style: .continuous)
-                .fill(AppColors.cardBackground)
-                .frame(width: scaled(cardWidth), height: scaled(cardHeight))
-
-            Image(AppImages.xtreamCardMask)
-                .resizable()
-                .scaledToFill()
-                .frame(width: scaled(cardWidth), height: scaled(isFocused ? 213.559 : 196))
-                .clipped()
-                .offset(x: 0, y: scaled(isFocused ? 160.44 : 149))
+            PlaylistLandingCardBackground(
+                scale: scale,
+                width: cardWidth,
+                height: cardHeight,
+                cornerRadius: 12.974,
+                isFocused: isFocused
+            )
 
             Image(AppImages.xtreamCardIcon)
                 .resizable()
@@ -159,9 +156,6 @@ private struct XtreamPlaylistCard: View {
                     y: scaled(isFocused ? 241.74 : 223)
                 )
 
-            RoundedRectangle(cornerRadius: scaled(12.974), style: .continuous)
-                .stroke(isFocused ? AppColors.brandSecondary : .clear, lineWidth: scaled(2.162))
-                .frame(width: scaled(cardWidth), height: scaled(cardHeight))
         }
         .frame(width: scaled(cardWidth), height: scaled(cardHeight), alignment: .topLeading)
         .contentShape(RoundedRectangle(cornerRadius: scaled(12.974), style: .continuous))
@@ -192,9 +186,13 @@ private struct PlaylistURLCard: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: scaled(12), style: .continuous)
-                .fill(AppColors.cardBackground)
-                .frame(width: scaled(cardWidth), height: scaled(cardHeight))
+            PlaylistLandingCardBackground(
+                scale: scale,
+                width: cardWidth,
+                height: cardHeight,
+                cornerRadius: 12,
+                isFocused: isFocused
+            )
 
             Image(AppImages.m3uCardIcon)
                 .resizable()
@@ -230,9 +228,6 @@ private struct PlaylistURLCard: View {
                     y: scaled(isFocused ? 241.74 : 223)
                 )
 
-            RoundedRectangle(cornerRadius: scaled(12), style: .continuous)
-                .stroke(isFocused ? AppColors.brandSecondary : .clear, lineWidth: scaled(2.162))
-                .frame(width: scaled(cardWidth), height: scaled(cardHeight))
         }
         .frame(width: scaled(cardWidth), height: scaled(cardHeight), alignment: .topLeading)
         .contentShape(RoundedRectangle(cornerRadius: scaled(12), style: .continuous))
@@ -253,6 +248,39 @@ private struct PlaylistURLCard: View {
 
     private var cardHeight: CGFloat {
         isFocused ? 374 : 345
+    }
+}
+
+private struct PlaylistLandingCardBackground: View {
+    let scale: CGFloat
+    let width: CGFloat
+    let height: CGFloat
+    let cornerRadius: CGFloat
+    let isFocused: Bool
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            if isFocused {
+                Image(AppImages.focusedPlaylistCardBackground)
+                    .resizable()
+                    .frame(width: scaled(width), height: scaled(height))
+                    .clipped()
+            } else {
+                RoundedRectangle(cornerRadius: scaled(cornerRadius), style: .continuous)
+                    .fill(AppColors.cardBackground)
+                    .frame(width: scaled(width), height: scaled(height))
+            }
+        }
+        .frame(width: scaled(width), height: scaled(height), alignment: .topLeading)
+        .clipShape(RoundedRectangle(cornerRadius: scaled(activeCornerRadius), style: .continuous))
+    }
+
+    private var activeCornerRadius: CGFloat {
+        isFocused ? 12.974 : cornerRadius
+    }
+
+    private func scaled(_ value: CGFloat) -> CGFloat {
+        value * scale
     }
 }
 

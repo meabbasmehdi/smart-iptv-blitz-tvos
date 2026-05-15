@@ -71,6 +71,7 @@ enum AppImages {
     static let splashBackground = "SplashBackground"
     static let xtreamCardIcon = "FigmaXtreamCardIcon"
     static let xtreamCardMask = "FigmaXtreamMask"
+    static let focusedPlaylistCardBackground = "FigmaFocusedPlaylistCardBackground"
     static let m3uCardIcon = "FigmaM3UCardIcon"
     static let uploadIcon = "FigmaUploadIcon"
     static let wifiIcon = "FigmaWifiIcon"
