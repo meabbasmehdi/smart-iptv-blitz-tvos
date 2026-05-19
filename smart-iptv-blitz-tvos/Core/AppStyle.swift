@@ -79,6 +79,14 @@ enum AppImages {
     static let xtreamIcon = "XtreamIcon"
     static let m3uIcon = "M3UIcon"
     static let importFileIcon = "ImportFileIcon"
+    static let homeBackground = "FigmaHomeBackground"
+    static let homeLiveTVPoster = "FigmaLiveTVPoster"
+    static let homeLiveIcon = "FigmaHomeLiveIcon"
+    static let homeHeartIcon = "FigmaHomeHeartIcon"
+    static let homeParentalIcon = "FigmaHomeParentalIcon"
+    static let homePlaylistIcon = "FigmaHomePlaylistIcon"
+    static let homeWifiIcon = "FigmaHomeWifiIcon"
+    static let homeSettingsIcon = "FigmaHomeSettingsIcon"
 }
 
 enum AppFontFamily {
