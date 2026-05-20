@@ -15,6 +15,7 @@ struct ContentView: View {
     @StateObject private var playlistsViewModel: PlaylistsViewModel
     @StateObject private var createPlaylistViewModel: CreatePlaylistViewModel
     @StateObject private var homeViewModel: HomeViewModel
+    @StateObject private var liveTVViewModel: LiveTVViewModel
 
     init(container: AppContainer = .live) {
         self.container = container
@@ -35,6 +36,9 @@ struct ContentView: View {
         )
         _homeViewModel = StateObject(
             wrappedValue: HomeViewModel(preferences: container.preferences)
+        )
+        _liveTVViewModel = StateObject(
+            wrappedValue: LiveTVViewModel(service: container.liveTVService)
         )
     }
 
@@ -63,11 +67,36 @@ struct ContentView: View {
                 )
                     .transition(.opacity)
             case .some(.home):
-                HomeScreen(viewModel: homeViewModel)
+                HomeScreen(
+                    viewModel: homeViewModel,
+                    onOpenLiveTV: startupViewModel.routeToLiveTV
+                )
                     .onAppear {
                         homeViewModel.refreshActivePlaylist()
                     }
                     .transition(.opacity)
+            case .some(.liveTV):
+                LiveTVCategoriesScreen(
+                    viewModel: liveTVViewModel,
+                    onOpenPlayer: startupViewModel.routeToPlayer,
+                    onBack: startupViewModel.routeToHome
+                )
+                .transition(.opacity)
+            case .some(.player):
+                if let channel = liveTVViewModel.playerChannel {
+                    LiveTVPlayerScreen(channel: channel) {
+                        liveTVViewModel.clearPlayer()
+                        startupViewModel.routeToLiveTV()
+                    }
+                    .transition(.opacity)
+                } else {
+                    LiveTVCategoriesScreen(
+                        viewModel: liveTVViewModel,
+                        onOpenPlayer: startupViewModel.routeToPlayer,
+                        onBack: startupViewModel.routeToHome
+                    )
+                    .transition(.opacity)
+                }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: startupViewModel.route)

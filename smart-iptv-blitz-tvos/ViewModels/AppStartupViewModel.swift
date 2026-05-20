@@ -32,4 +32,12 @@ final class AppStartupViewModel: ObservableObject {
     func routeToHome() {
         route = .home
     }
+
+    func routeToLiveTV() {
+        route = .liveTV
+    }
+
+    func routeToPlayer() {
+        route = .player
+    }
 }

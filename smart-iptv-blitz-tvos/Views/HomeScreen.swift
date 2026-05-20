@@ -3,7 +3,14 @@ import Combine
 
 struct HomeScreen: View {
     @ObservedObject var viewModel: HomeViewModel
+    let onOpenLiveTV: () -> Void
+
     @FocusState private var focusedItem: HomeFocusItem?
+
+    init(viewModel: HomeViewModel, onOpenLiveTV: @escaping () -> Void = {}) {
+        self.viewModel = viewModel
+        self.onOpenLiveTV = onOpenLiveTV
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -23,7 +30,9 @@ struct HomeScreen: View {
                 HomeClockBlock(scale: scale)
                     .offset(x: scaled(1439, scale), y: scaled(43, scale))
 
-                HomeLiveTVCard(scale: scale, isFocused: focusedItem == .liveTV) {}
+                HomeLiveTVCard(scale: scale, isFocused: focusedItem == .liveTV) {
+                    onOpenLiveTV()
+                }
                     .focused($focusedItem, equals: .liveTV)
                     .offset(
                         x: scaled(focusedItem == .liveTV ? 60 : 70, scale),

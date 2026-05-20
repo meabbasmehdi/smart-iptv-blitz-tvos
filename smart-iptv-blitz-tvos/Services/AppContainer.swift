@@ -7,6 +7,7 @@ final class AppContainer {
     let authDeviceService: AuthDeviceService
     let disclaimerService: DisclaimerService
     let playlistService: PlaylistService
+    let liveTVService: LiveTVService
     let startupService: AppStartupService
 
     static let live = AppContainer()
@@ -35,6 +36,11 @@ final class AppContainer {
             deviceIdentityProvider: deviceIdentityProvider,
             preferences: preferences
         )
+        let liveTVService = LiveTVService(
+            apiClient: apiClient,
+            authDeviceService: authDeviceService,
+            preferences: preferences
+        )
 
         self.preferences = preferences
         self.tokenStore = tokenStore
@@ -42,6 +48,7 @@ final class AppContainer {
         self.authDeviceService = authDeviceService
         self.disclaimerService = disclaimerService
         self.playlistService = playlistService
+        self.liveTVService = liveTVService
         self.startupService = AppStartupService(
             authDeviceService: authDeviceService,
             disclaimerService: disclaimerService,
