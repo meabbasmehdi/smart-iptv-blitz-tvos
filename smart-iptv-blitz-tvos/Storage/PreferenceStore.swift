@@ -20,8 +20,16 @@ final class PreferenceStore {
         defaults.string(forKey: key) ?? defaultValue
     }
 
+    func stringOptional(forKey key: String) -> String? {
+        defaults.string(forKey: key)
+    }
+
     func set(_ value: String?, forKey key: String) {
-        defaults.set(value, forKey: key)
+        if let value {
+            defaults.set(value, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
+        }
     }
 
     func int64(forKey key: String) -> Int64? {

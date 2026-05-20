@@ -59,6 +59,9 @@ final class PlaylistService {
         preferences.set(selected.id, forKey: PreferenceKeys.activePlaylistID)
         preferences.set(selected.source.rawValue, forKey: PreferenceKeys.activePlaylistSource)
         preferences.set(selected.title, forKey: PreferenceKeys.activePlaylistTitle)
+        preferences.set(selected.url, forKey: PreferenceKeys.activePlaylistURL)
+        preferences.set(selected.username, forKey: PreferenceKeys.activePlaylistUsername)
+        preferences.set(selected.password, forKey: PreferenceKeys.activePlaylistPassword)
         return .activePlaylist
     }
 
@@ -70,6 +73,9 @@ final class PlaylistService {
         preferences.set(playlistID, forKey: PreferenceKeys.activePlaylistID)
         preferences.set(playlist.source.rawValue, forKey: PreferenceKeys.activePlaylistSource)
         preferences.set(playlist.title, forKey: PreferenceKeys.activePlaylistTitle)
+        preferences.set(playlist.url, forKey: PreferenceKeys.activePlaylistURL)
+        preferences.set(playlist.username, forKey: PreferenceKeys.activePlaylistUsername)
+        preferences.set(playlist.password, forKey: PreferenceKeys.activePlaylistPassword)
     }
 
     func addDefaultPlaylistAndSelect() async throws -> PlaylistResponse {
@@ -105,5 +111,8 @@ final class PlaylistService {
         preferences.remove(PreferenceKeys.activePlaylistID)
         preferences.remove(PreferenceKeys.activePlaylistSource)
         preferences.remove(PreferenceKeys.activePlaylistTitle)
+        preferences.remove(PreferenceKeys.activePlaylistURL)
+        preferences.remove(PreferenceKeys.activePlaylistUsername)
+        preferences.remove(PreferenceKeys.activePlaylistPassword)
     }
 }

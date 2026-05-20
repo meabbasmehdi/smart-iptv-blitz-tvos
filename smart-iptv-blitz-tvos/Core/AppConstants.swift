@@ -5,6 +5,8 @@ enum AppRoute: Equatable {
     case playlists
     case createPlaylist
     case home
+    case liveTV
+    case player
 }
 
 enum StartupTarget {
@@ -24,6 +26,9 @@ enum PreferenceKeys {
     static let activePlaylistID = "pref_active_playlist_id"
     static let activePlaylistSource = "pref_active_playlist_source"
     static let activePlaylistTitle = "pref_active_playlist_title"
+    static let activePlaylistURL = "pref_active_playlist_url"
+    static let activePlaylistUsername = "pref_active_playlist_username"
+    static let activePlaylistPassword = "pref_active_playlist_password"
     static let stableDeviceSeed = "pref_stable_device_seed"
 }
 
